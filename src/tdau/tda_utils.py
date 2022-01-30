@@ -48,17 +48,14 @@ class utils:
         response = self.c.get_account(
             cred.tda_accountid, fields=client.Client.Account.Fields.POSITIONS
         ).json()["securitiesAccount"]
-        output = {}
-        for position in response["positions"]:
-            output.update(
-                {
-                    position["instrument"]["symbol"]: int(
-                        position["longQuantity"] - position["shortQuantity"]
-                    )
-                }
+        output = {
+            position["instrument"]["symbol"]: int(
+                position["longQuantity"] - position["shortQuantity"]
             )
-        output.update({"USD": response["currentBalances"]["availableFunds"]})
-        output.update({"net": response["currentBalances"]["liquidationValue"]})
+            for position in response["positions"]
+        }
+        output["USD"] = response["currentBalances"]["availableFunds"]
+        output["net"] = response["currentBalances"]["liquidationValue"]
         return output
 
     def get_recent_order(self) -> dict:
