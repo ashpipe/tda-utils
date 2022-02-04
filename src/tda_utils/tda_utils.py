@@ -1,5 +1,5 @@
 from tda import auth, client
-import credential as cred
+from . import credential as cred
 from datetime import datetime
 import json
 import requests
