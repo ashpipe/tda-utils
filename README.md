@@ -2,7 +2,7 @@
 Collection of helpful python functions on top of `tda-api` python wrapper
 
 ## credential file
-`credential.py` file needs to contain the following four constants:
+`credential.py` file needs to contain the following six constants:
 
 | Constant name | Filetype  | Description |
 | ------------  | -------   | ----------- |
@@ -10,6 +10,16 @@ Collection of helpful python functions on top of `tda-api` python wrapper
 | `tda_api_key` |   `str`   | api key from TDA website
 | `tda_redirect_uri` | `str` | e.g) `'http://localhost'`
 | `tda_accountid`   | `int` | account id from TDA website
+| `alpaca_api_key`  | `str` |
+| `alpaca_api_secret`   | `str` |
 
 
 ## Quickstart
+1. Place `credential.py` and `token.pickle` in `src/tda_utils` folder
+2. Create a virtual environment e.g)
+    ```bash
+    conda create -n tda
+    conda activate tda
+    conda install pip
+    ```
+3. Install the package by `pip install -e /path/to/git/folder`
