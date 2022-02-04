@@ -23,3 +23,7 @@ Collection of helpful python functions on top of `tda-api` python wrapper
     conda install pip
     ```
 3. Install the package by `pip install -e /path/to/git/folder`
+
+## Log files
+history.yaml
+log.txt
