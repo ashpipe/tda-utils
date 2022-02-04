@@ -12,4 +12,4 @@ Collection of helpful python functions on top of `tda-api` python wrapper
 | `tda_accountid`   | `int` | account id from TDA website
 
 
-## Quick start
+## Quickstart
