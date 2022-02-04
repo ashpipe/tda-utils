@@ -1,0 +1,3 @@
+pyyaml
+tda-api
+requests
