@@ -11,6 +11,7 @@ from tda.orders.equities import (
 )
 import time
 import yaml
+from datetime import timezone
 
 
 class utils:
@@ -61,6 +62,9 @@ class utils:
     def get_recent_order(self) -> dict:
         return self.c.get_orders_by_path(cred.tda_accountid).json()[0]
 
+    def get_order(self, orderid: int) -> dict:
+        return self.c.get_order(orderid, cred.tda_accountid).json()
+
     def get_quote(self, symbol: str) -> dict:
         return self.c.get_quotes(symbol).json()[symbol]
 
@@ -94,30 +98,34 @@ class utils:
         return [bar["close"] for bar in bars]
 
     def log(self, message: str) -> None:
-        path = self.log_path + "/log.txt"
+        path = f"{self.log_path}/log.txt"
         lines = open(path, "r").readlines()
         with open(path, "w") as file:
             for line in lines[-99:]:
                 file.write(line)
             file.write(
-                datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S") + " " + message + "\n"
+                datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                + " "
+                + message
+                + "\n"
             )
 
     def record_buy(self, symbol: str, price: float) -> None:
 
         item = {
-            "date": datetime.utcnow().strftime("%Y-%m-%d"),
+            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
             "symbol": symbol,
             "buy_price": price,
         }
-        path = self.log_path + "/history.yaml"
+
+        path = f"{self.log_path}/history.yaml"
 
         history = yaml.safe_load(open(path, "r"))
         history.insert(0, item)
         yaml.dump(history, open(path, "w"))
 
     def record_sell(self, symbol: str, price: float) -> None:
-        path = self.log_path + "/history.yaml"
+        path = f"{self.log_path}/history.yaml"
         history = yaml.safe_load(open(path, "r"))
         if history[0]["symbol"] == symbol and "sell_price" not in history[0].keys():
             history[0]["sell_price"] = price
