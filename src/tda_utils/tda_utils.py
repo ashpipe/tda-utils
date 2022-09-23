@@ -39,7 +39,7 @@ class tda:
         ]
         token_days = (datetime.now() - datetime.fromtimestamp(timestamp)).days
         if token_days > 89:
-            self.log("Token expired.")
+            print("Token expired.")
         elif token_days > 60:
             print(f"TD ameritrade token expires in {90 - token_days} days.")
 
@@ -117,7 +117,7 @@ class tda:
         ):
             toc = time.time()
             if toc - tic > wait_time:
-                self.log("Forcing market order ...")
+                print("Forcing market order ...")
                 order = self.c.replace_order(
                     cred.tda_accountid,
                     orderid,
@@ -157,7 +157,7 @@ class tda:
         ):
             toc = time.time()
             if toc - tic > wait_time:
-                self.log("Forcing market order ...")
+                print("Forcing market order ...")
                 order = self.c.replace_order(
                     cred.tda_accountid,
                     orderid,
