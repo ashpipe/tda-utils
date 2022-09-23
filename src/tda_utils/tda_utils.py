@@ -98,19 +98,19 @@ class tda:
         return [bar["close"] for bar in bars]
 
     def open_position_market(self, symbol: str, quantity: int) -> int:
-        self.c.place_order(cred.tda_accountid, equity_buy_market(symbol, quantity))
-        return self.get_recent_order()["orderId"]
+        order = self.c.place_order(cred.tda_accountid, equity_buy_market(symbol, quantity))
+        return int(order.headers['Location'].split('/')[-1])
 
     def open_position_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
     ) -> int:
-        self.c.place_order(
+        order = self.c.place_order(
             cred.tda_accountid,
             equity_buy_limit(
                 symbol, quantity, self.get_quote(symbol)["lastPrice"] * (1 + slip_allow)
             ),
         )
-        orderid = self.get_recent_order()["orderId"]
+        orderid = int(order.headers['Location'].split('/')[-1])
         tic = time.time()
         while (
             self.c.get_order(orderid, cred.tda_accountid).json()["status"] != "FILLED"
@@ -118,7 +118,7 @@ class tda:
             toc = time.time()
             if toc - tic > wait_time:
                 self.log("Forcing market order ...")
-                self.c.replace_order(
+                order = self.c.replace_order(
                     cred.tda_accountid,
                     orderid,
                     equity_buy_market(
@@ -128,21 +128,21 @@ class tda:
                         ],
                     ),
                 )
-                orderid = self.get_recent_order()["orderId"]
+                orderid = int(order.headers['Location'].split('/')[-1])
             time.sleep(3)
         return orderid
 
     def liquidate_market(self, symbol: str, quantity: int) -> int:
-        self.c.place_order(
+        order = self.c.place_order(
             cred.tda_accountid,
             equity_sell_market(symbol, quantity),
         )
-        return self.get_recent_order()["orderId"]
+        return int(order.headers['Location'].split('/')[-1])
 
     def liquidate_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
     ) -> int:
-        self.c.place_order(
+        order = self.c.place_order(
             cred.tda_accountid,
             equity_sell_limit(
                 symbol,
@@ -150,7 +150,7 @@ class tda:
                 self.get_quote(symbol)["lastPrice"] * (1 - slip_allow),
             ),
         )
-        orderid = self.get_recent_order()["orderId"]
+        orderid = int(order.headers['Location'].split('/')[-1])
         tic = time.time()
         while (
             self.c.get_order(orderid, cred.tda_accountid).json()["status"] != "FILLED"
@@ -158,7 +158,7 @@ class tda:
             toc = time.time()
             if toc - tic > wait_time:
                 self.log("Forcing market order ...")
-                self.c.replace_order(
+                order = self.c.replace_order(
                     cred.tda_accountid,
                     orderid,
                     equity_sell_market(
@@ -168,7 +168,7 @@ class tda:
                         ],
                     ),
                 )
-                orderid = self.get_recent_order()["orderId"]
+                orderid = int(order.headers['Location'].split('/')[-1])
             time.sleep(3)
 
         return orderid
