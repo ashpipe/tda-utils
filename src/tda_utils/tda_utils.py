@@ -12,13 +12,13 @@ from tda.orders.equities import (
 import time
 import yaml
 from datetime import timezone
+import os, sys
 
 
-class utils:
-    def __init__(self, log_path: str = "."):
+class tda:
+    def __init__(self):
         self.c = auth.client_from_token_file(cred.tda_token_path, cred.tda_api_key)
         self.token_old()
-        self.log_path = log_path
 
     def market_open(self) -> bool:
         # r = self.c.get_hours_for_single_market(
@@ -97,46 +97,13 @@ class utils:
         bars = r.json()["candles"][-9:]
         return [bar["close"] for bar in bars]
 
-    def log(self, message: str) -> None:
-        path = f"{self.log_path}/log.txt"
-        lines = open(path, "r").readlines()
-        with open(path, "w") as file:
-            for line in lines[-99:]:
-                file.write(line)
-            file.write(
-                datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
-                + " "
-                + message
-                + "\n"
-            )
-
-    def record_buy(self, symbol: str, price: float) -> None:
-
-        item = {
-            "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            "symbol": symbol,
-            "buy_price": price,
-        }
-
-        path = f"{self.log_path}/history.yaml"
-
-        history = yaml.safe_load(open(path, "r"))
-        history.insert(0, item)
-        yaml.dump(history, open(path, "w"))
-
-    def record_sell(self, symbol: str, price: float) -> None:
-        path = f"{self.log_path}/history.yaml"
-        history = yaml.safe_load(open(path, "r"))
-        if history[0]["symbol"] == symbol and "sell_price" not in history[0].keys():
-            history[0]["sell_price"] = price
-            yaml.dump(history, open(path, "w"))
-
-    def open_position_market(self, symbol: str, quantity: int) -> None:
+    def open_position_market(self, symbol: str, quantity: int) -> int:
         self.c.place_order(cred.tda_accountid, equity_buy_market(symbol, quantity))
+        return self.get_recent_order()["orderId"]
 
     def open_position_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
-    ) -> None:
+    ) -> int:
         self.c.place_order(
             cred.tda_accountid,
             equity_buy_limit(
@@ -163,16 +130,18 @@ class utils:
                 )
                 orderid = self.get_recent_order()["orderId"]
             time.sleep(3)
+        return orderid
 
-    def liquidate_market(self, symbol: str, quantity: int) -> None:
+    def liquidate_market(self, symbol: str, quantity: int) -> int:
         self.c.place_order(
             cred.tda_accountid,
             equity_sell_market(symbol, quantity),
         )
+        return self.get_recent_order()["orderId"]
 
     def liquidate_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
-    ) -> None:
+    ) -> int:
         self.c.place_order(
             cred.tda_accountid,
             equity_sell_limit(
@@ -202,6 +171,8 @@ class utils:
                 orderid = self.get_recent_order()["orderId"]
             time.sleep(3)
 
+        return orderid
+
     def compare_volume(self, symbol: str) -> bool:
         """Compares previous day volume and today volume (9:30 ~ 15:50)"""
         r = self.c.get_price_history(
@@ -219,3 +190,35 @@ class utils:
         cur_vol = sum(vol_list[78:154])
 
         return cur_vol > prev_vol
+
+
+class log:
+    def __init__(self, path: str = os.path.dirname(sys.argv[0])):
+        self.path = path
+
+    def log(self, message: str) -> None:
+        path = f"{self.path}/log.txt"
+        lines = open(path, "r").readlines()
+        with open(path, "w") as file:
+            for line in lines[-99:]:
+                file.write(line)
+            file.write(
+                datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                + " "
+                + message
+                + "\n"
+            )
+
+    def read(self) -> dict:
+        path = f"{self.path}/history.yaml"
+        return yaml.safe_load(open(path, "r"))[0]
+
+    def record(self, item: dict) -> None:
+
+        item["date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+        path = f"{self.path}/history.yaml"
+
+        history = yaml.safe_load(open(path, "r"))
+        history.insert(0, item)
+        yaml.dump(history, open(path, "w"))
