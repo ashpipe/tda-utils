@@ -97,13 +97,13 @@ class tda:
         bars = r.json()["candles"][-9:]
         return [bar["close"] for bar in bars]
 
-    def open_position_market(self, symbol: str, quantity: int) -> int:
+    def open_position_market(self, symbol: str, quantity: int) -> dict:
         order = self.c.place_order(cred.tda_accountid, equity_buy_market(symbol, quantity))
-        return int(order.headers['Location'].split('/')[-1])
+        return self.get_order(int(order.headers['Location'].split('/')[-1]))
 
     def open_position_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
-    ) -> int:
+    ) -> dict:
         order = self.c.place_order(
             cred.tda_accountid,
             equity_buy_limit(
@@ -130,18 +130,18 @@ class tda:
                 )
                 orderid = int(order.headers['Location'].split('/')[-1])
             time.sleep(3)
-        return orderid
+        return self.get_order(orderid)
 
-    def liquidate_market(self, symbol: str, quantity: int) -> int:
+    def liquidate_market(self, symbol: str, quantity: int) -> dict:
         order = self.c.place_order(
             cred.tda_accountid,
             equity_sell_market(symbol, quantity),
         )
-        return int(order.headers['Location'].split('/')[-1])
+        return self.get_order(int(order.headers['Location'].split('/')[-1]))
 
     def liquidate_limit(
         self, symbol: str, quantity: int, wait_time: float = 300, slip_allow: float = 0
-    ) -> int:
+    ) -> dict:
         order = self.c.place_order(
             cred.tda_accountid,
             equity_sell_limit(
@@ -171,7 +171,7 @@ class tda:
                 orderid = int(order.headers['Location'].split('/')[-1])
             time.sleep(3)
 
-        return orderid
+        return self.get_order(orderid)
 
     def compare_volume(self, symbol: str) -> bool:
         """Compares previous day volume and today volume (9:30 ~ 15:50)"""
