@@ -1,6 +1,7 @@
 from tda import auth, client
 from . import credential as cred
 from datetime import datetime
+import pytz
 import json
 import requests
 from tda.orders.equities import (
@@ -195,6 +196,7 @@ class tda:
 class log:
     def __init__(self, path: str = os.path.dirname(sys.argv[0])):
         self.path = path
+        self.tz = pytz.timezone("US/Eastern") # timezone.utc
 
     def log(self, message: str) -> None:
         path = f"{self.path}/log.txt"
@@ -203,7 +205,7 @@ class log:
             for line in lines[-99:]:
                 file.write(line)
             file.write(
-                datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+                datetime.now(self.tz).strftime("%Y-%m-%dT%H:%M:%S")
                 + " "
                 + message
                 + "\n"
@@ -215,7 +217,7 @@ class log:
 
     def record(self, item: dict) -> None:
 
-        item["date"] = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        item["date"] = datetime.now(self.tz).strftime("%Y-%m-%d")
 
         path = f"{self.path}/history.yaml"
 
