@@ -100,6 +100,7 @@ class tda:
 
     def open_position_market(self, symbol: str, quantity: int) -> dict:
         order = self.c.place_order(cred.tda_accountid, equity_buy_market(symbol, quantity))
+        time.sleep(1)
         return self.get_order(int(order.headers['Location'].split('/')[-1]))
 
     def open_position_limit(
@@ -138,6 +139,7 @@ class tda:
             cred.tda_accountid,
             equity_sell_market(symbol, quantity),
         )
+        time.sleep(1)
         return self.get_order(int(order.headers['Location'].split('/')[-1]))
 
     def liquidate_limit(
