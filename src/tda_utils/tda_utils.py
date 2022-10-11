@@ -196,9 +196,9 @@ class tda:
 
 
 class log:
-    def __init__(self, path: str = os.path.dirname(sys.argv[0])):
+    def __init__(self, path: str = os.path.dirname(sys.argv[0]), tz=pytz.timezone("US/Eastern")):
         self.path = path
-        self.tz = pytz.timezone("US/Eastern") # timezone.utc
+        self.tz = tz # timezone.utc
 
     def log(self, message: str) -> None:
         path = f"{self.path}/log.txt"
